@@ -31,7 +31,7 @@ async function runTest() {
                                     quote = await getKutipanAcak();
                                     tries++;
                               } while (quote?.id === lastQuoteId && tries < 5);
-                              lastQuoteId = quote?.aid;
+                              lastQuoteId = quote?.id;
 
                               const result = await sendKutipan(quote, index++);
                               takirim++;

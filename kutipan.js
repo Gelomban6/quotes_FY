@@ -12,11 +12,25 @@ const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
 bot.onText(/\/start/, (msg) => {
       const chatId = msg.chat.id;
       const welcomeText = `
-      Hallo, selamat datang !
-      kirim /kutipan untuk mendapatkan kutipan acak
-      /bantuan untuk melihat bantuan yang ada
+Hallo, selamat datang !
+kirim /kutipan untuk mendapatkan kutipan acak
+/bantuan untuk melihat bantuan yang ada
       `;
       bot.sendMessage(chatId, welcomeText);
+});
+
+bot.onText(/\/stop/, async (msg) => {
+      const chatId = msg.chat.id;
+      await Setting.deleteOne({ key: `schedule_${chatId}` });
+
+      if (jobs.has(chatId)) {
+            jobs.get(chatId).stop();
+            jobs.delete(chatId);
+      }
+      bot.sendMessage(
+            chatId,
+            "Bot dihentikan. Kamu tidak akan menerima kutipan otomatis lagi."
+      );
 });
 
 bot.onText(/\/kutipan/, async (msg) => {
@@ -42,7 +56,7 @@ bot.onText(/\/kutipan/, async (msg) => {
 });
 
 //buat jadwal
-bot.onText(/\/jadwal\s*(.*)/, async (msg, match) => {
+bot.onText(/\/jadwal\s*([\d:]+)/, async (msg, match) => {
       const chatId = msg.chat.id;
       const timeInput = match[1].trim();
 
@@ -168,6 +182,7 @@ bot.onText(/\/bantuan/, (msg) => {
 /jadwal HH:MM - Jadwalkan pengiriman kutipan harian (format 24 jam)
 /lihatjadwal - Lihat waktu jadwal pengiriman kutipan saat ini
 /hapusjadwal - Hapus jadwal pengiriman otomatis
+/stop - Hentikan semua aktivitas bot
 /bantuan - Tampilkan daftar perintah ini
 
 Contoh penggunaan:
