@@ -13,6 +13,7 @@ async function runTest() {
       let success = 0;
       let failed = 0;
       let rateLimited = 0;
+      let lastQuoteId = null;
       console.log("🚀 Starting Telegram quote sender...");
 
       const startTime = Date.now();
@@ -24,7 +25,14 @@ async function runTest() {
             for (let i = 0; i < MAX_MESSAGE_PER_SECOND; i++) {
                   batch.push(
                         (async () => {
-                              const quote = await getKutipanAcak();
+                              let quote;
+                              let tries = 0;
+                              do {
+                                    quote = await getKutipanAcak();
+                                    tries++;
+                              } while (quote?.id === lastQuoteId && tries < 5);
+                              lastQuoteId = quote?.aid;
+
                               const result = await sendKutipan(quote, index++);
                               takirim++;
                               success += result.success;
